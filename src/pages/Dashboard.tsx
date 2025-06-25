@@ -56,7 +56,7 @@ const Dashboard: React.FC = () => {
         const token = localStorage.getItem('token');
         if (!token) return;
   
-        const response = await axios.get('http://localhost:5000/api/match/profile', {
+        const response = await axios.get('https://code-executor-ecdd.onrender.com/api/match/profile', {
           headers: {
             'Authorization': `Bearer ${token}`
           }

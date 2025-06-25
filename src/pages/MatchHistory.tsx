@@ -43,7 +43,7 @@ const MatchHistory: React.FC = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await axios.get('http://localhost:5000/api/match/history', {
+      const response = await axios.get('https://code-executor-ecdd.onrender.com/api/match/history', {
         headers: {
           'Authorization': `Bearer ${token}`
         },
@@ -161,7 +161,7 @@ const MatchHistory: React.FC = () => {
             </div>
           </div>
         </Card>
-        
+
         {/* Match History Table */}
         <Card>
           {loading ? (
