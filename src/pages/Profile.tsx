@@ -73,7 +73,7 @@ const Profile: React.FC = () => {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await axios.get('https://code-executor-ecdd.onrender.com/api/user/profile', {
+        const response = await axios.get('https://codebattle-backend-1.onrender.com/api/user/profile', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -121,7 +121,7 @@ const Profile: React.FC = () => {
   const handleSaveProfile = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put('https://code-executor-ecdd.onrender.com/api/user/profile', editForm, {
+      await axios.put('https://codebattle-backend-1.onrender.com/api/user/profile', editForm, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

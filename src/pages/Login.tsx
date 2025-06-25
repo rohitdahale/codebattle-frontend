@@ -18,7 +18,7 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('https://code-executor-ecdd.onrender.com/api/auth/login', {
+      const response = await fetch('https://codebattle-backend-1.onrender.com/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

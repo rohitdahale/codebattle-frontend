@@ -140,7 +140,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       
       if (token) {
         // Initialize socket connection
-        const socketInstance = io('https://code-executor-ecdd.onrender.com', {
+        const socketInstance = io('https://codebattle-backend-1.onrender.com', {
           auth: {
             token: token
           },

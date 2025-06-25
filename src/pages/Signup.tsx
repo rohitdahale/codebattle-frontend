@@ -41,7 +41,7 @@ const Signup: React.FC = () => {
     }
   
     try {
-      const response = await fetch('https://code-executor-ecdd.onrender.com/api/auth/register', {
+      const response = await fetch('https://codebattle-backend-1.onrender.com/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -46,7 +46,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const token = localStorage.getItem('token');
         if (token) {
           // Verify token with backend
-          const response = await fetch('https://code-executor-ecdd.onrender.com/api/auth/verify', {
+          const response = await fetch('https://codebattle-backend-1.onrender.com/api/auth/verify', {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,
