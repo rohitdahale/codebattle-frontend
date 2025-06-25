@@ -1,0 +1,88 @@
+{
+  "categories": [
+    {
+      "id": "arrays",
+      "name": "Arrays",
+      "color": "from-blue-500 to-purple-600",
+      "icon": "grid-3x3",
+      "problems": [
+        {
+          "id": "two-sum",
+          "title": "Two Sum",
+          "difficulty": "Easy",
+          "description": "Given an array of integers and a target sum, return indices of two numbers that add up to the target.",
+          "examples": [
+            {
+              "input": "nums = [2,7,11,15], target = 9",
+              "output": "[0,1]",
+              "explanation": "Because nums[0] + nums[1] == 9, we return [0, 1]."
+            }
+          ],
+          "starterCode": "function twoSum(nums, target) {\n    // Your code here\n    \n}",
+          "xp": 50
+        },
+        {
+          "id": "reverse-array",
+          "title": "Reverse Array",
+          "difficulty": "Easy",
+          "description": "Write a function to reverse an array in-place.",
+          "examples": [
+            {
+              "input": "nums = [1,2,3,4,5]",
+              "output": "[5,4,3,2,1]",
+              "explanation": "The array is reversed in-place."
+            }
+          ],
+          "starterCode": "function reverseArray(nums) {\n    // Your code here\n    \n}",
+          "xp": 30
+        }
+      ]
+    },
+    {
+      "id": "strings",
+      "name": "Strings",
+      "color": "from-green-500 to-teal-600",
+      "icon": "type",
+      "problems": [
+        {
+          "id": "palindrome",
+          "title": "Valid Palindrome",
+          "difficulty": "Easy",
+          "description": "A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward.",
+          "examples": [
+            {
+              "input": "s = \"A man, a plan, a canal: Panama\"",
+              "output": "true",
+              "explanation": "\"amanaplanacanalpanama\" is a palindrome."
+            }
+          ],
+          "starterCode": "function isPalindrome(s) {\n    // Your code here\n    \n}",
+          "xp": 40
+        }
+      ]
+    },
+    {
+      "id": "graphs",
+      "name": "Graphs",
+      "color": "from-purple-500 to-pink-600",
+      "icon": "network",
+      "problems": [
+        {
+          "id": "bfs",
+          "title": "Breadth-First Search",
+          "difficulty": "Medium",
+          "description": "Implement breadth-first search to find the shortest path in an unweighted graph.",
+          "examples": [
+            {
+              "input": "graph = [[1,2],[0,3],[0,3],[1,2]], start = 0, end = 3",
+              "output": "[0,1,3]",
+              "explanation": "The shortest path from 0 to 3 is [0,1,3]."
+            }
+          ],
+          "starterCode": "function bfs(graph, start, end) {\n    // Your code here\n    \n}",
+          "xp": 100
+        }
+      ]
+    }
+  ]
+}

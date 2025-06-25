@@ -1,0 +1,37 @@
+{
+  "currentUser": {
+    "id": "user-1",
+    "username": "CodeWarrior",
+    "email": "admin@example.com",
+    "avatar": "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150",
+    "xp": 2847,
+    "rank": 12,
+    "level": 18,
+    "winRate": 76.4,
+    "totalMatches": 89,
+    "wins": 68,
+    "badges": [
+      { "id": "first-win", "name": "First Victory", "icon": "trophy" },
+      { "id": "speed-demon", "name": "Speed Demon", "icon": "zap" },
+      { "id": "problem-solver", "name": "Problem Solver", "icon": "brain" }
+    ],
+    "recentMatches": [
+      { "id": "match-1", "opponent": "PyMaster", "result": "win", "problem": "Two Sum", "time": "2 mins ago" },
+      { "id": "match-2", "opponent": "JSNinja", "result": "loss", "problem": "Palindrome", "time": "15 mins ago" },
+      { "id": "match-3", "opponent": "AlgoAce", "result": "win", "problem": "Binary Search", "time": "1 hour ago" }
+    ]
+  },
+  "leaderboard": [
+    { "id": "user-2", "username": "AlgoMaster", "xp": 4521, "rank": 1, "winRate": 94.2, "avatar": "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150&h=150" },
+    { "id": "user-3", "username": "CodeNinja", "xp": 4387, "rank": 2, "winRate": 91.8, "avatar": "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150&h=150" },
+    { "id": "user-4", "username": "StackQueen", "xp": 4201, "rank": 3, "winRate": 89.3, "avatar": "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150" },
+    { "id": "user-5", "username": "ByteHunter", "xp": 3987, "rank": 4, "winRate": 87.6, "avatar": "https://images.pexels.com/photos/697509/pexels-photo-697509.jpeg?auto=compress&cs=tinysrgb&w=150&h=150" },
+    { "id": "user-6", "username": "LogicLord", "xp": 3742, "rank": 5, "winRate": 85.1, "avatar": "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=150&h=150" },
+    { "id": "user-7", "username": "RecursiveRex", "xp": 3598, "rank": 6, "winRate": 83.7, "avatar": "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150&h=150" },
+    { "id": "user-8", "username": "BinaryBeast", "xp": 3421, "rank": 7, "winRate": 82.4, "avatar": "https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=150&h=150" },
+    { "id": "user-9", "username": "SortSage", "xp": 3287, "rank": 8, "winRate": 80.9, "avatar": "https://images.pexels.com/photos/2381069/pexels-photo-2381069.jpeg?auto=compress&cs=tinysrgb&w=150&h=150" },
+    { "id": "user-10", "username": "HashHero", "xp": 3156, "rank": 9, "winRate": 79.2, "avatar": "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150" },
+    { "id": "user-11", "username": "TreeTraverser", "xp": 2998, "rank": 10, "winRate": 77.8, "avatar": "https://images.pexels.com/photos/1544005/pexels-photo-1544005.jpeg?auto=compress&cs=tinysrgb&w=150&h=150" },
+    { "id": "user-1", "username": "CodeWarrior", "xp": 2847, "rank": 12, "winRate": 76.4, "avatar": "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150" }
+  ]
+}

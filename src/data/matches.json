@@ -1,0 +1,38 @@
+{
+  "activeMatch": {
+    "id": "match-123",
+    "problem": {
+      "id": "two-sum",
+      "title": "Two Sum",
+      "difficulty": "Easy",
+      "description": "Given an array of integers and a target sum, return indices of two numbers that add up to the target.",
+      "examples": [
+        {
+          "input": "nums = [2,7,11,15], target = 9",
+          "output": "[0,1]",
+          "explanation": "Because nums[0] + nums[1] == 9, we return [0, 1]."
+        }
+      ],
+      "starterCode": "function twoSum(nums, target) {\n    // Your code here\n    \n}"
+    },
+    "players": [
+      {
+        "id": "user-1",
+        "username": "CodeWarrior",
+        "avatar": "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150",
+        "progress": 45,
+        "status": "coding"
+      },
+      {
+        "id": "user-12",
+        "username": "PyMaster",
+        "avatar": "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150&h=150",
+        "progress": 62,
+        "status": "coding"
+      }
+    ],
+    "timeLeft": 420,
+    "totalTime": 600,
+    "startedAt": "2024-01-15T10:30:00Z"
+  }
+}
