@@ -1,8 +1,9 @@
 import { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import LoadingScreen from './components/common/LoadingScreen';
 
 // Lazy loaded pages
@@ -16,8 +17,12 @@ const Match = lazy(() => import('./pages/Match'));
 const Leaderboard = lazy(() => import('./pages/Leaderboard'));
 const Profile = lazy(() => import('./pages/Profile'));
 const MatchFinder = lazy(() => import('./pages/MatchFinder'));
-const MatchHistory = lazy(() => import('./pages/MatchHistory')); // Add this line
+const MatchHistory = lazy(() => import('./pages/MatchHistory'));
 const MatchResults = lazy(() => import('./pages/MatchResults'));
+
+import Room  from './pages/Room';
+import CreateRoom from './pages/CreateRoom';
+import JoinRoom from './pages/JoinRoom';
 
 
 type ProtectedRouteProps = {
@@ -49,6 +54,11 @@ function PublicRoute({ children }: ProtectedRouteProps) {
 
 function AppContent() {
   const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
+
+  // Define routes where Footer should be shown
+  const footerRoutes = ['/dashboard', '/practice', '/leaderboard'];
+  const shouldShowFooter = isAuthenticated && footerRoutes.includes(location.pathname);
 
   // Show loading screen while initializing auth
   if (loading) {
@@ -56,10 +66,10 @@ function AppContent() {
   }
 
   return (
-    <Router>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-        {isAuthenticated && <Navbar />}
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col">
+      {isAuthenticated && <Navbar />}
 
+      <main className="flex-grow">
         <Suspense fallback={<LoadingScreen />}>
           <Routes>
             {/* Public routes - redirect to dashboard if already authenticated */}
@@ -116,7 +126,6 @@ function AppContent() {
               } 
             />
 
-            {/* Add this new route */}
             <Route 
               path="/match-history" 
               element={
@@ -126,14 +135,14 @@ function AppContent() {
               } 
             />
 
-<Route 
-  path="/match-results" 
-  element={
-    <ProtectedRoute>
-      <MatchResults />
-    </ProtectedRoute>
-  } 
-/>
+            <Route 
+              path="/match-results" 
+              element={
+                <ProtectedRoute>
+                  <MatchResults />
+                </ProtectedRoute>
+              } 
+            />
 
             <Route 
               path="/practice/:id" 
@@ -152,6 +161,10 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
+
+            <Route path="/create-room" element={<CreateRoom />} />
+            <Route path="/join-room" element={<JoinRoom />} />
+            <Route path="/room/:roomCode" element={<Room />} />
 
             <Route 
               path="/match/:id" 
@@ -175,8 +188,11 @@ function AppContent() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
-      </div>
-    </Router>
+      </main>
+
+      {/* Footer - only show on specific routes when authenticated */}
+      {shouldShowFooter && <Footer />}
+    </div>
   );
 }
 
@@ -184,7 +200,9 @@ function App() {
   return (
     <AuthProvider>
       <SocketProvider>
-        <AppContent />
+        <Router>
+          <AppContent />
+        </Router>
       </SocketProvider>
     </AuthProvider>
   );

@@ -41,8 +41,12 @@ interface PlayerResult {
 
 interface MatchEndData {
   winner: string | null;
-  player1: PlayerResult;
-  player2: PlayerResult;
+  // For quick matches
+  player1?: PlayerResult;
+  player2?: PlayerResult;
+  // For room matches  
+  host?: PlayerResult;
+  guest?: PlayerResult;
   reason: string;
   matchDuration: number;
   finalScores?: {
@@ -50,6 +54,7 @@ interface MatchEndData {
     player2Score: number;
   };
 }
+
 
 interface LocationState {
   matchEndData: MatchEndData;
@@ -76,15 +81,58 @@ const MatchResults: React.FC = () => {
   }, [location.state, navigate]);
 
   if (!matchEndData || !problem || !user) {
-    return null;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-white mb-4">Loading...</h1>
+          <Button onClick={() => navigate('/dashboard')}>Back to Dashboard</Button>
+        </div>
+      </div>
+    );
   }
+  
 
-  const isWinner = matchEndData.winner === user.id;
+  const isWinner = matchEndData.winner === user?.id;
   const isDraw = matchEndData.winner === null;
   
-  const currentPlayer = matchEndData.player1.id === user.id ? matchEndData.player1 : matchEndData.player2;
-  const opponent = matchEndData.player1.id === user.id ? matchEndData.player2 : matchEndData.player1;
+  const getCurrentPlayer = (): PlayerResult => {
+    // Handle room match format (host/guest)
+    if (matchEndData.host && matchEndData.guest) {
+      return matchEndData.host.id === user?.id ? matchEndData.host : matchEndData.guest;
+    }
+    // Handle quick match format (player1/player2)  
+    if (matchEndData.player1 && matchEndData.player2) {
+      return matchEndData.player1.id === user?.id ? matchEndData.player1 : matchEndData.player2;
+    }
+    // Fallback - shouldn't happen but prevents crashes
+    return {
+      id: user?.id || '',
+      username: user?.username || 'Unknown',
+      score: 0,
+      code: '// No code available'
+    };
+  };
+  const getOpponent = (): PlayerResult => {
+    // Handle room match format (host/guest)
+    if (matchEndData.host && matchEndData.guest) {
+      return matchEndData.host.id === user?.id ? matchEndData.guest : matchEndData.host;
+    }
+    // Handle quick match format (player1/player2)
+    if (matchEndData.player1 && matchEndData.player2) {
+      return matchEndData.player1.id === user?.id ? matchEndData.player2 : matchEndData.player1;
+    }
+    // Fallback
+    return {
+      id: 'unknown',
+      username: 'Unknown Player',
+      score: 0,
+      code: '// No code available'
+    };
+  };
 
+  const currentPlayer = getCurrentPlayer();
+const opponent = getOpponent();
+  
   const getResultIcon = () => {
     if (isDraw) return <Target className="w-12 h-12 text-yellow-400" />;
     return isWinner ? <Trophy className="w-12 h-12 text-yellow-400" /> : <XCircle className="w-12 h-12 text-red-400" />;

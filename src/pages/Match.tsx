@@ -67,6 +67,8 @@ interface MatchData {
   timeLimit: number;
   startTime?: number;
   status?: 'waiting' | 'active' | 'completed';
+  players?: string[];
+  isRoomMatch?: boolean;
 }
 
 interface LocationState {
@@ -93,19 +95,25 @@ interface MatchEndData {
   };
 }
 
-interface MatchResultsModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  matchEndData: MatchEndData | null;
-  currentUser: { id: string; username: string } | null;
-  problem: Problem;
-}
-
 interface SocketError {
   message: string;
   code?: string;
   details?: any;
 }
+
+interface LanguageConfig {
+  name: string;
+  extension: string;
+  mode: string;
+}
+
+const LANGUAGES: Record<string, LanguageConfig> = {
+  javascript: { name: 'JavaScript', extension: 'js', mode: 'javascript' },
+  python: { name: 'Python', extension: 'py', mode: 'python' },
+  java: { name: 'Java', extension: 'java', mode: 'java' },
+  cpp: { name: 'C++', extension: 'cpp', mode: 'cpp' }
+};
+
 
 const Match: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -113,7 +121,7 @@ const Match: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
   const { socket } = useSocket();
-  
+
   const [code, setCode] = useState<string>('');
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [matchData, setMatchData] = useState<MatchData | null>(null);
@@ -121,98 +129,213 @@ const Match: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [connectionError, setConnectionError] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  
-  // Get match data from navigation state or initialize empty
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('javascript');
+
+
+  // Get match data from navigation state or fetch from server
   useEffect(() => {
-    const state = location.state as LocationState;
-    
-    if (state?.matchData) {
-      const data: MatchData = {
-        ...state.matchData,
-        problem: state.problem || state.matchData.problem,
-        opponent: state.matchData.opponent
-      };
+    const initializeMatch = async () => {
+      const state = location.state as LocationState;
       
-      setMatchData(data);
-      
-      // Set starter code if available
-      if (data.problem?.starterCode) {
-        setCode(data.problem.starterCode);
+      if (state?.matchData) {
+        // Quick match or room match data from navigation state
+        const data: MatchData = {
+          ...state.matchData,
+          problem: state.problem || state.matchData.problem,
+          opponent: state.matchData.opponent
+        };
+        setMatchData(data);
+        
+        if (data.problem?.starterCode) {
+          setCode(data.problem.starterCode || getDefaultStarterCode(data.problem?.title || '', selectedLanguage));
+        } else {
+          const defaultStarter = getDefaultStarterCode(data.problem?.title || '', selectedLanguage);
+          setCode(defaultStarter);
+        }
+        setIsLoading(false);
+      } else if (id) {
+        // CHANGE: Check if this is a room code (typically 6 chars) vs match ID
+        const isRoomCode = id.length === 6 && /^[A-Z0-9]+$/.test(id);
+        
+        try {
+          if (isRoomCode) {
+            // It's a room code, fetch room data
+            await fetchMatchData(id);
+          } else {
+            // It's a match ID, fetch match data (original logic)
+            await fetchMatchData(id);
+          }
+        } catch (error) {
+          console.error('Error fetching match data:', error);
+          setConnectionError('Failed to load match data. Please try again.');
+          setIsLoading(false);
+        }
       } else {
-        // Default starter code based on problem
-        const defaultStarter = getDefaultStarterCode(data.problem?.title || '');
-        setCode(defaultStarter);
+        console.error('No match data found');
+        setConnectionError('Match data not found. Please start a new match.');
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
-    } else {
-      console.error('No match data found in navigation state');
-      setConnectionError('Match data not found. Please start a new match.');
-      setIsLoading(false);
+    };
+  
+    initializeMatch();
+  }, [location.state, id]);
+
+  // Fetch match data from server (for room-based matches)
+  const fetchMatchData = async (matchId: string) => {
+    if (!socket) {
+      throw new Error('No socket connection');
     }
-  }, [location.state]);
+  
+    return new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Timeout fetching match data'));
+      }, 10000);
+  
+      // CHANGE: Listen for room_info instead of match_data for room matches
+      const handleRoomInfo = (data: any) => {
+        clearTimeout(timeout);
+        socket.off('room_info', handleRoomInfo);
+        socket.off('room_error', handleRoomError);
+  
+        if (data.room) {
+          const matchData: MatchData = {
+            matchId: data.room.code, // Use room code as match ID
+            opponent: data.room.guest || data.room.host, // Get opponent
+            problem: data.room.problem,
+            timeLimit: data.room.settings?.timeLimit || 300000, // Default 5 minutes
+            startTime: data.room.status === 'active' ? Date.now() : undefined,
+            status: data.room.status,
+            isRoomMatch: true // Mark as room match
+          };
+  
+          setMatchData(matchData);
+  
+          if (matchData.problem?.starterCode) {
+            setCode(matchData.problem.starterCode);
+          } else {
+            const defaultStarter = getDefaultStarterCode(matchData.problem?.title || '');
+            setCode(defaultStarter);
+          }
+  
+          setIsLoading(false);
+          resolve();
+        } else {
+          reject(new Error('Room not found'));
+        }
+      };
+  
+      const handleRoomError = (error: any) => {
+        clearTimeout(timeout);
+        socket.off('room_info', handleRoomInfo);
+        socket.off('room_error', handleRoomError);
+        reject(new Error(error.message || 'Room error'));
+      };
+  
+      // Register listeners
+      socket.on('room_info', handleRoomInfo);
+      socket.on('room_error', handleRoomError);
+  
+      // Request room info instead of match data
+      socket.emit('get_room_info', { roomCode: matchId });
+    });
+  };
+  
+  const handleLanguageChange = (language: string) => {
+    setSelectedLanguage(language);
+    const newStarterCode = getDefaultStarterCode(matchData?.problem?.title || '', language);
+    setCode(newStarterCode);
+  };
+  
 
   // Get default starter code for common problems
-  const getDefaultStarterCode = (problemTitle: string): string => {
+  const getDefaultStarterCode = (problemTitle: string, language: string = 'javascript'): string => {
     const lowerTitle = problemTitle.toLowerCase();
     
+    const templates = {
+      javascript: {
+        twoSum: `function twoSum(nums, target) {
+      // Your code here
+      return [];
+  }`,
+        reverseString: `function reverseString(s) {
+      // Your code here
+      // Note: Modify s in-place
+  }`,
+        palindrome: `function isPalindrome(x) {
+      // Your code here
+      return false;
+  }`,
+        default: `function solution() {
+      // Your code here
+      return null;
+  }`
+      },
+      python: {
+        twoSum: `def two_sum(nums, target):
+      # Your code here
+      return []`,
+        reverseString: `def reverse_string(s):
+      # Your code here
+      # Note: Modify s in-place
+      pass`,
+        palindrome: `def is_palindrome(x):
+      # Your code here
+      return False`,
+        default: `def solution():
+      # Your code here
+      return None`
+      },
+      java: {
+        twoSum: `public int[] twoSum(int[] nums, int target) {
+      // Your code here
+      return new int[]{};
+  }`,
+        reverseString: `public void reverseString(char[] s) {
+      // Your code here
+      // Note: Modify s in-place
+  }`,
+        palindrome: `public boolean isPalindrome(int x) {
+      // Your code here
+      return false;
+  }`,
+        default: `public Object solution() {
+      // Your code here
+      return null;
+  }`
+      },
+      cpp: {
+        twoSum: `vector<int> twoSum(vector<int>& nums, int target) {
+      // Your code here
+      return {};
+  }`,
+        reverseString: `void reverseString(vector<char>& s) {
+      // Your code here
+      // Note: Modify s in-place
+  }`,
+        palindrome: `bool isPalindrome(int x) {
+      // Your code here
+      return false;
+  }`,
+        default: `auto solution() {
+      // Your code here
+      return nullptr;
+  }`
+      }
+    };
+  
+    const langTemplates = templates[language] || templates.javascript;
+    
     if (lowerTitle.includes('two sum')) {
-      return `function twoSum(nums, target) {
-    // Your code here
-    return [];
-}`;
+      return langTemplates.twoSum;
     } else if (lowerTitle.includes('reverse string')) {
-      return `function reverseString(s) {
-    // Your code here
-    // Note: Modify s in-place
-}`;
+      return langTemplates.reverseString;
     } else if (lowerTitle.includes('palindrome')) {
-      return `function isPalindrome(x) {
-    // Your code here
-    return false;
-}`;
-    } else if (lowerTitle.includes('valid parentheses')) {
-      return `function isValid(s) {
-    // Your code here
-    return false;
-}`;
-    } else if (lowerTitle.includes('merge')) {
-      return `function mergeTwoLists(list1, list2) {
-    // Your code here
-    return null;
-}`;
-    } else if (lowerTitle.includes('maximum subarray')) {
-      return `function maxSubArray(nums) {
-    // Your code here
-    return 0;
-}`;
-    } else if (lowerTitle.includes('climbing stairs')) {
-      return `function climbStairs(n) {
-    // Your code here
-    return 0;
-}`;
-    } else if (lowerTitle.includes('binary search')) {
-      return `function search(nums, target) {
-    // Your code here
-    return -1;
-}`;
-    } else if (lowerTitle.includes('fizz buzz')) {
-      return `function fizzBuzz(n) {
-    // Your code here
-    return [];
-}`;
-    } else if (lowerTitle.includes('stock')) {
-      return `function maxProfit(prices) {
-    // Your code here
-    return 0;
-}`;
+      return langTemplates.palindrome;
     }
     
-    return `function solution() {
-    // Your code here
-    return null;
-}`;
+    return langTemplates.default;
   };
+  
 
   // Socket event listeners
   useEffect(() => {
@@ -220,17 +343,15 @@ const Match: React.FC = () => {
       setConnectionError('No socket connection available');
       return;
     }
-
+  
     const handleOpponentSubmitted = (data: OpponentSubmissionData) => {
       console.log('Opponent submission update:', data);
       setOpponentSubmitted(data.player1Submitted || data.player2Submitted);
     };
-
+  
     const handleMatchEnded = (data: MatchEndData) => {
       console.log('Match ended data:', data);
       setIsSubmitting(false);
-      
-      // Navigate to results page with data
       navigate('/match-results', {
         state: {
           matchEndData: data,
@@ -238,94 +359,130 @@ const Match: React.FC = () => {
         }
       });
     };
-    
-
+  
     const handleOpponentDisconnected = () => {
       alert('Opponent disconnected! You win by default.');
       setTimeout(() => navigate('/dashboard'), 2000);
     };
-
+  
     const handleMatchError = (data: SocketError) => {
       console.error('Match error:', data);
       setConnectionError(data.message);
       setIsSubmitting(false);
       setTimeout(() => navigate('/dashboard'), 3000);
     };
-
+  
+    // ADD: Room-specific event handlers
+    const handleRoomUpdated = (data: any) => {
+      console.log('Room updated:', data);
+      if (data.room.status === 'active' && !matchData?.startTime) {
+        // Room match started, update match data
+        setMatchData(prev => prev ? {
+          ...prev,
+          startTime: Date.now(),
+          status: 'active'
+        } : null);
+      }
+    };
+  
+    const handleRoomMessage = (data: any) => {
+      console.log('Room message:', data);
+      if (data.type === 'match_started') {
+        // Handle room match start
+        setMatchData(prev => prev ? {
+          ...prev,
+          startTime: Date.now(),
+          status: 'active'
+        } : null);
+      }
+    };
+  
     const handleSocketError = (error: any) => {
       console.error('Socket error:', error);
       setConnectionError('Connection error occurred');
     };
-
+  
     const handleDisconnect = () => {
       setConnectionError('Connection lost. Please refresh to reconnect.');
     };
-
+  
     const handleReconnect = () => {
       setConnectionError('');
       console.log('Reconnected to match');
     };
-
+  
     // Register event listeners
     socket.on('opponent_submitted', handleOpponentSubmitted);
     socket.on('match_ended', handleMatchEnded);
     socket.on('opponent_disconnected', handleOpponentDisconnected);
     socket.on('match_error', handleMatchError);
+    socket.on('room_updated', handleRoomUpdated); // ADD
+    socket.on('room_message', handleRoomMessage); // ADD
     socket.on('error', handleSocketError);
     socket.on('disconnect', handleDisconnect);
     socket.on('reconnect', handleReconnect);
-
-    // Join match room if we have match data
+  
+    // JOIN: Different join logic for room vs quick match
     if (matchData?.matchId) {
-      socket.emit('join_match', { matchId: matchData.matchId });
+      if (matchData.isRoomMatch) {
+        // For room matches, we're already in the room
+        console.log('Room match - already in room');
+      } else {
+        // For quick matches, join the match room
+        socket.emit('join_match', { matchId: matchData.matchId });
+      }
     }
-
+  
     return () => {
       socket.off('opponent_submitted', handleOpponentSubmitted);
       socket.off('match_ended', handleMatchEnded);
       socket.off('opponent_disconnected', handleOpponentDisconnected);
       socket.off('match_error', handleMatchError);
+      socket.off('room_updated', handleRoomUpdated); // ADD
+      socket.off('room_message', handleRoomMessage); // ADD
       socket.off('error', handleSocketError);
       socket.off('disconnect', handleDisconnect);
       socket.off('reconnect', handleReconnect);
     };
-  }, [socket, user?.id, navigate, matchData?.matchId, matchData?.opponent]);
+  }, [socket, user?.id, navigate, matchData?.matchId, matchData?.opponent, matchData?.isRoomMatch]); // ADD isRoomMatch to deps
+  
+  
 
   const handleSubmit = useCallback(async () => {
     if (!socket || isSubmitted || !code.trim() || isSubmitting) return;
-    
+  
     setIsSubmitting(true);
     setIsSubmitted(true);
-    
+  
     try {
-      // Include problem ID for proper test case handling
       const submissionData = {
         code: code.trim(),
         problemId: matchData?.problem?.id,
-        language: 'javascript', // Default to JavaScript
-        timestamp: Date.now()
+        language: selectedLanguage, // CHANGE from hardcoded 'javascript'
+        timestamp: Date.now(),
+        ...(matchData?.isRoomMatch && { isRoomMatch: true })
       };
       
+  
       console.log('Submitting code:', submissionData);
       socket.emit('submit_code', submissionData);
-      
-      // Timeout for submission
+  
       setTimeout(() => {
         if (isSubmitting) {
           setConnectionError('Submission timeout. Please try again.');
           setIsSubmitting(false);
           setIsSubmitted(false);
         }
-      }, 30000); // 30 second timeout
-      
+      }, 30000);
+  
     } catch (error) {
       console.error('Submission error:', error);
       setConnectionError('Failed to submit code. Please try again.');
       setIsSubmitting(false);
       setIsSubmitted(false);
     }
-  }, [socket, isSubmitted, code, isSubmitting, matchData?.problem?.id]);
-
+  }, [socket, isSubmitted, code, isSubmitting, matchData?.problem?.id, matchData?.isRoomMatch]); // ADD isRoomMatch
+  
   const handleTimeUp = useCallback(() => {
     console.log('Time is up!');
     if (!isSubmitted && !isSubmitting) {
@@ -336,22 +493,38 @@ const Match: React.FC = () => {
   const handleCodeChange = useCallback((newCode: string) => {
     setCode(newCode);
     
-    // Send code updates to opponent (for live coding features)
     if (socket && !isSubmitted && matchData?.matchId) {
-      socket.emit('code_update', { 
-        code: newCode,
-        matchId: matchData.matchId,
-        timestamp: Date.now()
-      });
+      if (matchData.isRoomMatch) {
+        // For room matches, emit room-specific code update
+        socket.emit('room_code_update', {
+          code: newCode,
+          timestamp: Date.now()
+        });
+      } else {
+        // For quick matches, emit match-specific code update
+        socket.emit('code_update', {
+          code: newCode,
+          matchId: matchData.matchId,
+          timestamp: Date.now()
+        });
+      }
     }
-  }, [socket, isSubmitted, matchData?.matchId]);
+  }, [socket, isSubmitted, matchData?.matchId, matchData?.isRoomMatch]);
   
+
   const handleForceExit = () => {
     if (socket && matchData?.matchId) {
-      socket.emit('leave_match', { matchId: matchData.matchId });
+      if (matchData.isRoomMatch) {
+        // For room matches, leave the room
+        socket.emit('leave_room');
+      } else {
+        // For quick matches, leave the match
+        socket.emit('leave_match', { matchId: matchData.matchId });
+      }
     }
     navigate('/dashboard');
   };
+  
 
   // Show loading if still loading or no match data
   if (isLoading) {
@@ -426,9 +599,9 @@ const Match: React.FC = () => {
               </Button>
               <div>
                 <h1 className="text-2xl font-bold text-white">{matchData.problem.title}</h1>
-                <Badge 
-                  text={matchData.problem.difficulty} 
-                  variant={getDifficultyColor(matchData.problem.difficulty)} 
+                <Badge
+                  text={matchData.problem.difficulty}
+                  variant={getDifficultyColor(matchData.problem.difficulty)}
                 />
               </div>
             </div>
@@ -527,7 +700,7 @@ const Match: React.FC = () => {
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-slate-400">Opponent:</span>
                     <div className="flex items-center space-x-2">
@@ -561,44 +734,62 @@ const Match: React.FC = () => {
             {/* Code Editor */}
             <div className="lg:col-span-3">
               <div className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-xl overflow-hidden">
-                <div className="flex items-center justify-between p-4 border-b border-slate-700/50">
-                  <div className="flex items-center space-x-3">
-                    <Code className="w-5 h-5 text-purple-400" />
-                    <h2 className="text-lg font-bold text-white">Code Editor</h2>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    {isSubmitting && (
-                      <div className="flex items-center space-x-2">
-                        <Loader className="w-4 h-4 animate-spin text-blue-400" />
-                        <span className="text-sm text-blue-400">Submitting...</span>
-                      </div>
-                    )}
-                    
-                    <Button
-                      onClick={handleSubmit}
-                      disabled={isSubmitted || !code.trim() || isSubmitting}
-                      variant={isSubmitted ? "success" : "primary"}
-                      icon={isSubmitted ? CheckCircle : Send}
-                      className={`${
-                        isSubmitted 
-                          ? 'bg-green-500/20 text-green-400 border-green-500/30 cursor-not-allowed' 
-                          : ''
-                      }`}
-                    >
-                      {isSubmitting ? 'Submitting...' : isSubmitted ? 'Submitted' : 'Submit Solution'}
-                    </Button>
-                  </div>
-                </div>
+              <div className="flex items-center justify-between p-4 border-b border-slate-700/50">
+  <div className="flex items-center space-x-3">
+    <Code className="w-5 h-5 text-purple-400" />
+    <h2 className="text-lg font-bold text-white">Code Editor</h2>
+    
+    {/* ADD Language Selector */}
+    <div className="flex items-center space-x-2 ml-6">
+      <span className="text-sm text-slate-400">Language:</span>
+      <select
+        value={selectedLanguage}
+        onChange={(e) => handleLanguageChange(e.target.value)}
+        disabled={isSubmitted}
+        className="bg-slate-700 text-white text-sm rounded-lg px-3 py-1 border border-slate-600 focus:border-purple-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {Object.entries(LANGUAGES).map(([key, config]) => (
+          <option key={key} value={key}>
+            {config.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  </div>
+  
+  <div className="flex items-center space-x-3">
+    {isSubmitting && (
+      <div className="flex items-center space-x-2">
+        <Loader className="w-4 h-4 animate-spin text-blue-400" />
+        <span className="text-sm text-blue-400">Submitting...</span>
+      </div>
+    )}
+    <Button
+      onClick={handleSubmit}
+      disabled={isSubmitted || !code.trim() || isSubmitting}
+      variant={isSubmitted ? "success" : "primary"}
+      icon={isSubmitted ? CheckCircle : Send}
+      className={`${
+        isSubmitted
+          ? 'bg-green-500/20 text-green-400 border-green-500/30 cursor-not-allowed'
+          : ''
+      }`}
+    >
+      {isSubmitting ? 'Submitting...' : isSubmitted ? 'Submitted' : 'Submit Solution'}
+    </Button>
+  </div>
+</div>
+
 
                 <div className="h-[600px]">
-                  <CodeEditor
-                    value={code}
-                    onChange={handleCodeChange}
-                    height="600px"
-                    readOnly={isSubmitted}
-                    className={isSubmitted ? 'opacity-60' : ''}
-                  />
+                <CodeEditor
+  value={code}
+  onChange={handleCodeChange}
+  height="600px"
+  readOnly={isSubmitted}
+  language={LANGUAGES[selectedLanguage].mode} // ADD this prop
+  className={isSubmitted ? 'opacity-60' : ''}
+/>
                 </div>
 
                 {isSubmitted && (

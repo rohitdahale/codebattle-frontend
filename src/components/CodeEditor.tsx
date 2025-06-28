@@ -1,6 +1,9 @@
 import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
+import { python } from '@codemirror/lang-python';
+import { java } from '@codemirror/lang-java';
+import { cpp } from '@codemirror/lang-cpp';
 import { oneDark } from '@codemirror/theme-one-dark';
 
 interface CodeEditorProps {
@@ -8,6 +11,8 @@ interface CodeEditorProps {
   onChange: (value: string) => void;
   height?: string;
   readOnly?: boolean;
+  language?: string;
+  className?: string;
 }
 
 const CodeEditor: React.FC<CodeEditorProps> = ({
@@ -15,21 +20,47 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   onChange,
   height = '400px',
   readOnly = false,
+  language = 'javascript',
+  className = '',
 }) => {
+  // Language extension mapping
+  const getLanguageExtension = (lang: string) => {
+    switch (lang) {
+      case 'javascript':
+        return [javascript()];
+      case 'python':
+        return [python()];
+      case 'java':
+        return [java()];
+      case 'cpp':
+        return [cpp()];
+      default:
+        return [javascript()];
+    }
+  };
+
+  const extensions = getLanguageExtension(language);
+
   return (
-    <div className="border border-gray-700 rounded-lg overflow-hidden">
+    <div className={className} style={{ height }}>
       <CodeMirror
         value={value}
-        height={height}
-        theme={oneDark}
-        extensions={[javascript()]}
         onChange={onChange}
+        height={height}
         readOnly={readOnly}
+        theme={oneDark}
+        extensions={extensions}
         basicSetup={{
           lineNumbers: true,
           foldGutter: true,
           dropCursor: false,
           allowMultipleSelections: false,
+          indentOnInput: true,
+          bracketMatching: true,
+          closeBrackets: true,
+          autocompletion: true,
+          highlightSelectionMatches: false,
+          searchKeymap: true,
         }}
       />
     </div>

@@ -94,6 +94,96 @@ interface OpponentCodeUpdateData {
   userId: string;
 }
 
+interface RoomCreatedData {
+  roomCode: string;
+  room: {
+    code: string;
+    host: string;
+    guest: string | null;
+    problem: any;
+    settings: any;
+    status: string;
+  };
+}
+
+interface RoomJoinedData {
+  roomCode: string;
+  room: {
+    code: string;
+    host: string;
+    guest: string | null;
+    problem: any;
+    settings: any;
+    status: string;
+  };
+}
+
+interface RoomUpdatedData {
+  room: {
+    code: string;
+    host: string;
+    guest: string | null;
+    problem: any;
+    settings: any;
+    status: string;
+  };
+}
+
+interface RoomErrorData {
+  message: string;
+}
+
+interface RoomInfoData {
+  room: {
+    code: string;
+    host: string;
+    guest: string | null;
+    problem: any;
+    settings: any;
+    status: string;
+  };
+}
+
+interface RoomMessageData {
+  message: string;
+  type: string;
+}
+
+interface ProblemChangedData {
+  problem: any;
+  hostReady: boolean;
+  guestReady: boolean;
+}
+
+interface RoomResetData {
+  room: {
+    code: string;
+    host: string;
+    guest: string | null;
+    problem: any;
+    settings: any;
+    status: string;
+  };
+}
+
+interface RoomListData {
+  rooms: Array<{
+    code: string;
+    host: string;
+    guest: string | null;
+    status: string;
+    createdAt: number;
+  }>;
+}
+
+interface SystemStatusData {
+  quickMatch: any;
+  rooms: any;
+  onlineUsers: number;
+}
+
+
+
 interface SocketContextType {
   socket: Socket | null;
   isConnected: boolean;
@@ -106,6 +196,17 @@ interface SocketContextType {
   submitCode: (code: string) => void;
   sendCodeUpdate: (code: string) => void;
   sendMatchMessage: (message: string) => void;
+
+  createRoom: (settings?: any) => void;
+  joinRoom: (roomCode: string) => void;
+  leaveRoom: () => void;
+  getRoomInfo: (roomCode: string) => void;
+  changeProblem: (problemId?: string) => void;
+  getAllRooms: () => void;
+  getSystemStatus: () => void;
+  startRoomMatch: () => void;
+
+
   // Event listeners
   onQueueJoined: (callback: (data: QueueJoinedData) => void) => void;
   onQueueLeft: (callback: (data: QueueLeftData) => void) => void;
@@ -118,6 +219,19 @@ interface SocketContextType {
   onMatchMessage: (callback: (data: MatchMessageData) => void) => void;
   onOpponentCodeUpdate: (callback: (data: OpponentCodeUpdateData) => void) => void;
   onOpponentDisconnected: (callback: () => void) => void;
+
+  onRoomCreated: (callback: (data: RoomCreatedData) => void) => void;
+  onRoomJoined: (callback: (data: RoomJoinedData) => void) => void;
+  onRoomUpdated: (callback: (data: RoomUpdatedData) => void) => void;
+  onRoomError: (callback: (data: RoomErrorData) => void) => void;
+  onRoomInfo: (callback: (data: RoomInfoData) => void) => void;
+  onRoomMessage: (callback: (data: RoomMessageData) => void) => void;
+  onProblemChanged: (callback: (data: ProblemChangedData) => void) => void;
+  onRoomReset: (callback: (data: RoomResetData) => void) => void;
+  onRoomList: (callback: (data: RoomListData) => void) => void;
+  onSystemStatus: (callback: (data: SystemStatusData) => void) => void;
+
+
   // Cleanup methods
   removeAllListeners: () => void;
 }
@@ -186,6 +300,49 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     }
   }, [isAuthenticated, user]);
 
+  const createRoom = (settings?: any) => {
+    if (socket && isConnected) {
+      socket.emit('create_room', { settings });
+    }
+  };
+
+  const joinRoom = (roomCode: string) => {
+    if (socket && isConnected) {
+      socket.emit('join_room', { roomCode });
+    }
+  };
+
+  const leaveRoom = () => {
+    if (socket && isConnected) {
+      socket.emit('leave_room');
+    }
+  };
+
+  const getRoomInfo = (roomCode: string) => {
+    if (socket && isConnected) {
+      socket.emit('get_room_info', { roomCode });
+    }
+  };
+
+  const changeProblem = (problemId?: string) => {
+    if (socket && isConnected) {
+      socket.emit('change_problem', { problemId });
+    }
+  };
+
+  const getAllRooms = () => {
+    if (socket && isConnected) {
+      socket.emit('get_all_rooms');
+    }
+  };
+
+  const getSystemStatus = () => {
+    if (socket && isConnected) {
+      socket.emit('get_system_status');
+    }
+  };
+
+
   // Queue methods
   const joinQueue = () => {
     if (socket && isConnected) {
@@ -199,6 +356,11 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     }
   };
 
+  const startRoomMatch = () => {
+    if (socket && isConnected) {
+      socket.emit('start_room_match');
+    }
+  };
   // Match methods
   const playerReady = () => {
     if (socket && isConnected) {
@@ -291,11 +453,72 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     }
   };
 
+  const onRoomCreated = (callback: (data: RoomCreatedData) => void) => {
+    if (socket) {
+      socket.on('room_created', callback);
+    }
+  };
+
+  const onRoomJoined = (callback: (data: RoomJoinedData) => void) => {
+    if (socket) {
+      socket.on('room_joined', callback);
+    }
+  };
+
+  const onRoomUpdated = (callback: (data: RoomUpdatedData) => void) => {
+    if (socket) {
+      socket.on('room_updated', callback);
+    }
+  };
+
+  const onRoomError = (callback: (data: RoomErrorData) => void) => {
+    if (socket) {
+      socket.on('room_error', callback);
+    }
+  };
+
+  const onRoomInfo = (callback: (data: RoomInfoData) => void) => {
+    if (socket) {
+      socket.on('room_info', callback);
+    }
+  };
+
+  const onRoomMessage = (callback: (data: RoomMessageData) => void) => {
+    if (socket) {
+      socket.on('room_message', callback);
+    }
+  };
+
+  const onProblemChanged = (callback: (data: ProblemChangedData) => void) => {
+    if (socket) {
+      socket.on('problem_changed', callback);
+    }
+  };
+
+  const onRoomReset = (callback: (data: RoomResetData) => void) => {
+    if (socket) {
+      socket.on('room_reset', callback);
+    }
+  };
+
+  const onRoomList = (callback: (data: RoomListData) => void) => {
+    if (socket) {
+      socket.on('room_list', callback);
+    }
+  };
+
+  const onSystemStatus = (callback: (data: SystemStatusData) => void) => {
+    if (socket) {
+      socket.on('system_status', callback);
+    }
+  };
+
+
   const removeAllListeners = () => {
     if (socket) {
       socket.removeAllListeners();
     }
-  };
+  };  
 
   const value: SocketContextType = {
     socket,
@@ -307,8 +530,19 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     submitCode,
     sendCodeUpdate,
     sendMatchMessage,
+    
+    // ADD THESE ROOM METHODS
+    createRoom,
+    joinRoom,
+    leaveRoom,
+    getRoomInfo,
+    changeProblem,
+    getAllRooms,
+    getSystemStatus,
+    
     onQueueJoined,
     onQueueLeft,
+    startRoomMatch,
     onMatchFound,
     onMatchStarted,
     onPlayerReadyStatus,
@@ -318,7 +552,21 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     onMatchMessage,
     onOpponentCodeUpdate,
     onOpponentDisconnected,
+    
+    // ADD THESE ROOM EVENT LISTENERS
+    onRoomCreated,
+    onRoomJoined,
+    onRoomUpdated,
+    onRoomError,
+    onRoomInfo,
+    onRoomMessage,
+    onProblemChanged,
+    onRoomReset,
+    onRoomList,
+    onSystemStatus,
+    
     removeAllListeners,
+
   };
 
   return <SocketContext.Provider value={value}>{children}</SocketContext.Provider>;

@@ -91,7 +91,35 @@ const Dashboard: React.FC = () => {
     navigate('/match-finder');
   };
 
+  const handleCreateRoom = () => {
+    navigate('/create-room');
+  };
+
+  const handlePractice = () => {
+    navigate('/practice');
+  };
+
+  const handleLeaderboard = () => {
+    navigate('/leaderboard');
+  };
+
+  const handleJoinRoom = () => {
+    navigate('/join-room');
+  };
+
+  const handleBrowseRooms = () => {
+    navigate('/rooms');
+  };
+
   if (!user) return null;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
 
   // Fix XP calculation with proper fallbacks
   const currentLevel = userStats.level;
@@ -101,16 +129,6 @@ const Dashboard: React.FC = () => {
   const xpInCurrentLevel = currentXp - previousLevelXp; // Progress within current level
   const xpNeededForCurrentLevel = xpToNextLevel - previousLevelXp; // Total XP needed for current level
   const progressPercentage = Math.max(0, Math.min(100, (xpInCurrentLevel / xpNeededForCurrentLevel) * 100));  
-
-// Add this right after the user check
-if (!user) return null;
-if (loading) {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-      <div className="text-white text-xl">Loading...</div>
-    </div>
-  );
-}
 
   // Provide fallback values for all user stats
   return (
@@ -171,9 +189,6 @@ if (loading) {
           </Card>
         </div>
 
-        {/* Queue Status */}
-    
-
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
@@ -230,7 +245,8 @@ if (loading) {
           <div className="lg:col-span-2">
             <h2 className="text-2xl font-bold text-white mb-6">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card hover onClick={handleQuickMatch}>
+              {/* Quick Match Card */}
+              <Card hover className="cursor-pointer" onClick={handleQuickMatch}>
                 <div className="text-center">
                   <div className="bg-gradient-to-r from-red-500 to-pink-600 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                     <Zap className="w-8 h-8 text-white" />
@@ -247,7 +263,8 @@ if (loading) {
                 </div>
               </Card>
 
-              <Card hover onClick={() => navigate('/match/create')}>
+              {/* Create Room Card */}
+              <Card hover className="cursor-pointer" onClick={handleCreateRoom}>
                 <div className="text-center">
                   <div className="bg-gradient-to-r from-cyan-500 to-blue-600 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                     <Users className="w-8 h-8 text-white" />
@@ -260,7 +277,8 @@ if (loading) {
                 </div>
               </Card>
 
-              <Card hover onClick={() => navigate('/practice')}>
+              {/* Practice Card */}
+              <Card hover className="cursor-pointer" onClick={handlePractice}>
                 <div className="text-center">
                   <div className="bg-gradient-to-r from-green-500 to-teal-600 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                     <BookOpen className="w-8 h-8 text-white" />
@@ -273,15 +291,44 @@ if (loading) {
                 </div>
               </Card>
 
-              <Card hover onClick={() => navigate('/leaderboard')}>
+              {/* Leaderboard Card */}
+              <Card hover className="cursor-pointer" onClick={handleLeaderboard}>
                 <div className="text-center">
                   <div className="bg-gradient-to-r from-yellow-500 to-orange-600 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                     <Trophy className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-white mb-2">Leaderboard</h3>
                   <p className="text-slate-400 mb-4">See how you rank globally</p>
-                  <Button variant="ghost" className="w-full">
+                  <Button variant="secondary" className="w-full">
                     View Rankings
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Join Room Card */}
+              <Card hover className="cursor-pointer" onClick={handleJoinRoom}>
+                <div className="text-center">
+                  <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <Users className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">Join Room</h3>
+                  <p className="text-slate-400 mb-4">Enter a room code to join</p>
+                  <Button variant="primary" className="w-full">
+                    Join by Code
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Browse Rooms Card */}
+              <Card hover className="cursor-pointer" onClick={handleBrowseRooms}>
+                <div className="text-center">
+                  <div className="bg-gradient-to-r from-orange-500 to-red-600 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <Users className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">Browse Rooms</h3>
+                  <p className="text-slate-400 mb-4">See all available public rooms</p>
+                  <Button variant="secondary" className="w-full">
+                    Browse Rooms
                   </Button>
                 </div>
               </Card>
@@ -319,58 +366,58 @@ if (loading) {
 
             {/* Recent Matches */}
             <div>
-  <div className="flex items-center justify-between mb-4">
-    <h2 className="text-xl font-bold text-white">Recent Matches</h2>
-    <Button 
-      variant="ghost" 
-      size="sm"
-      onClick={() => navigate('/match-history')}
-      className="text-cyan-400 hover:text-cyan-300"
-    >
-      View All
-    </Button>
-  </div>
-  <Card>
-    <div className="space-y-3">
-      {userStats.recentMatches.length > 0 ? (
-        userStats.recentMatches.slice(0, 3).map((match, index) => (
-          <div key={match.id || index} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg">
-            <div>
-              <p className="text-sm font-medium text-white">vs {match.opponent}</p>
-              <p className="text-xs text-slate-400">{match.problem}</p>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-white">Recent Matches</h2>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => navigate('/match-history')}
+                  className="text-cyan-400 hover:text-cyan-300"
+                >
+                  View All
+                </Button>
+              </div>
+              <Card>
+                <div className="space-y-3">
+                  {userStats.recentMatches.length > 0 ? (
+                    userStats.recentMatches.slice(0, 3).map((match, index) => (
+                      <div key={match.id || index} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg">
+                        <div>
+                          <p className="text-sm font-medium text-white">vs {match.opponent}</p>
+                          <p className="text-xs text-slate-400">{match.problem}</p>
+                        </div>
+                        <div className="text-right">
+                          <Badge
+                            text={match.result}
+                            variant={match.result === 'win' ? 'success' : match.result === 'loss' ? 'danger' : 'warning'}
+                            size="sm"
+                          />
+                          <p className="text-xs text-slate-400 mt-1">{match.time}</p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <Target className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                      <p className="text-slate-400">No recent matches</p>
+                      <p className="text-sm text-slate-500">Start your first coding battle!</p>
+                    </div>
+                  )}
+                  {userStats.recentMatches.length > 3 && (
+                    <div className="pt-3 border-t border-slate-700">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => navigate('/match-history')}
+                        className="w-full text-cyan-400 hover:text-cyan-300"
+                      >
+                        View {userStats.recentMatches.length - 3} more matches
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </Card>
             </div>
-            <div className="text-right">
-              <Badge
-                text={match.result}
-                variant={match.result === 'win' ? 'success' : match.result === 'loss' ? 'danger' : 'warning'}
-                size="sm"
-              />
-              <p className="text-xs text-slate-400 mt-1">{match.time}</p>
-            </div>
-          </div>
-        ))
-      ) : (
-        <div className="text-center py-8">
-          <Target className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-          <p className="text-slate-400">No recent matches</p>
-          <p className="text-sm text-slate-500">Start your first coding battle!</p>
-        </div>
-      )}
-      {userStats.recentMatches.length > 3 && (
-        <div className="pt-3 border-t border-slate-700">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => navigate('/match-history')}
-            className="w-full text-cyan-400 hover:text-cyan-300"
-          >
-            View {userStats.recentMatches.length - 3} more matches
-          </Button>
-        </div>
-      )}
-    </div>
-  </Card>
-</div>
           </div>
         </div>
       </div>

@@ -34,7 +34,7 @@ interface MatchFound {
 
 const MatchFinder: React.FC = () => {
   const { user } = useAuth();
-  const { socket, isConnected } = useSocket();
+  const { socket, isConnected, onlineUsers } = useSocket();
   const navigate = useNavigate();
   
   const [queueState, setQueueState] = useState<QueueState>({
@@ -203,36 +203,37 @@ const MatchFinder: React.FC = () => {
 
         {/* Match Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <div className="text-center">
-              <div className="bg-gradient-to-r from-green-500 to-teal-600 p-3 rounded-lg w-fit mx-auto mb-3">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <p className="text-2xl font-bold text-white">24</p>
-              <p className="text-sm text-slate-400">Online Players</p>
-            </div>
-          </Card>
-          
-          <Card>
-            <div className="text-center">
-              <div className="bg-gradient-to-r from-cyan-500 to-blue-600 p-3 rounded-lg w-fit mx-auto mb-3">
-                <Zap className="w-6 h-6 text-white" />
-              </div>
-              <p className="text-2xl font-bold text-white">~30s</p>
-              <p className="text-sm text-slate-400">Avg Wait Time</p>
-            </div>
-          </Card>
-          
-          <Card>
-            <div className="text-center">
-              <div className="bg-gradient-to-r from-purple-500 to-pink-600 p-3 rounded-lg w-fit mx-auto mb-3">
-                <Clock className="w-6 h-6 text-white" />
-              </div>
-              <p className="text-2xl font-bold text-white">156</p>
-              <p className="text-sm text-slate-400">Matches Today</p>
-            </div>
-          </Card>
+    <Card>
+      <div className="text-center">
+        <div className="bg-gradient-to-r from-green-500 to-teal-600 p-3 rounded-lg w-fit mx-auto mb-3">
+          <Users className="w-6 h-6 text-white" />
         </div>
+        {/* MODIFY THIS: Use real online users count */}
+        <p className="text-2xl font-bold text-white">{onlineUsers}</p>
+        <p className="text-sm text-slate-400">Online Players</p>
+      </div>
+    </Card>
+          
+    <Card>
+      <div className="text-center">
+        <div className="bg-gradient-to-r from-cyan-500 to-blue-600 p-3 rounded-lg w-fit mx-auto mb-3">
+          <Zap className="w-6 h-6 text-white" />
+        </div>
+        <p className="text-2xl font-bold text-white">~30s</p>
+        <p className="text-sm text-slate-400">Avg Wait Time</p>
+      </div>
+    </Card>
+    
+    <Card>
+      <div className="text-center">
+        <div className="bg-gradient-to-r from-purple-500 to-pink-600 p-3 rounded-lg w-fit mx-auto mb-3">
+          <Clock className="w-6 h-6 text-white" />
+        </div>
+        <p className="text-2xl font-bold text-white">156</p>
+        <p className="text-sm text-slate-400">Matches Today</p>
+      </div>
+    </Card>
+  </div>
       </div>
 
       {/* Match Found Modal */}

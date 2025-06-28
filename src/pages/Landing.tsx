@@ -1,42 +1,103 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Code, Zap, Trophy, Users, Star, ArrowRight, Play, Target, Brain, Rocket } from 'lucide-react';
-import Button from '../components/Button';
-import Card from '../components/Card';
+import { Code, Zap, Trophy, Users, Star, ArrowRight, Play, Target, Brain, Rocket, Clock, Globe, Gamepad2 } from 'lucide-react';
 
-const Landing: React.FC = () => {
+const Button = ({ children, variant = 'primary', size = 'md', icon: Icon, className = '', ...props }) => {
+  const baseClasses = 'inline-flex items-center justify-center font-medium transition-all duration-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900';
+  
+  const variants = {
+    primary: 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg hover:shadow-xl focus:ring-cyan-500',
+    secondary: 'bg-slate-700 hover:bg-slate-600 text-white border border-slate-600 hover:border-slate-500 focus:ring-slate-500'
+  };
+  
+  const sizes = {
+    sm: 'px-4 py-2 text-sm',
+    md: 'px-6 py-3 text-base',
+    lg: 'px-8 py-4 text-lg'
+  };
+  
+  return (
+    <button
+      className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`}
+      {...props}
+    >
+      {children}
+      {Icon && <Icon className="ml-2 w-4 h-4" />}
+    </button>
+  );
+};
+
+const Card = ({ children, className = '', ...props }) => {
+  return (
+    <div
+      className={`bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 ${className}`}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+};
+
+const Landing = () => {
   const features = [
     {
       icon: Zap,
-      title: 'Real-time Battles',
-      description: 'Compete against developers worldwide in live coding challenges with instant feedback.',
+      title: 'Quick Match',
+      description: 'Jump into instant battles with developers worldwide. Get matched by skill level for fair competition.',
       color: 'from-yellow-400 to-orange-500'
     },
     {
-      icon: Brain,
-      title: 'Smart Practice',
-      description: 'Level up your skills with curated problems across algorithms, data structures, and more.',
+      icon: Users,
+      title: 'Private Rooms',
+      description: 'Create custom rooms with friends or colleagues. Set your own rules and practice together.',
       color: 'from-purple-400 to-pink-500'
     },
     {
-      icon: Trophy,
-      title: 'Global Rankings',
-      description: 'Climb the leaderboard and earn achievements as you master new coding concepts.',
+      icon: Globe,
+      title: 'Public Lobbies',
+      description: 'Join open rooms and meet new coding enthusiasts. Share strategies and learn from others.',
       color: 'from-green-400 to-teal-500'
     },
     {
-      icon: Users,
-      title: 'Community Driven',
-      description: 'Join thousands of developers improving their skills through friendly competition.',
+      icon: Trophy,
+      title: 'Global Leaderboards',
+      description: 'Compete for the top spots across different categories. Track your progress and achievements.',
       color: 'from-blue-400 to-cyan-500'
+    },
+    {
+      icon: Brain,
+      title: 'Practice Mode',
+      description: 'Sharpen your skills with curated challenges. Learn algorithms and data structures at your pace.',
+      color: 'from-indigo-400 to-purple-500'
+    },
+    {
+      icon: Gamepad2,
+      title: 'Real-time Battles',
+      description: 'Experience live coding duels with instant feedback. See your opponent\'s progress in real-time.',
+      color: 'from-red-400 to-pink-500'
     }
   ];
 
   const stats = [
-    { number: '50K+', label: 'Active Coders', icon: Users },
-    { number: '1M+', label: 'Battles Fought', icon: Zap },
-    { number: '500+', label: 'Challenges', icon: Target },
-    { number: '99%', label: 'Satisfaction', icon: Star }
+    { number: '200+', label: 'Coding Challenges', icon: Target },
+    { number: '15+', label: 'Languages Supported', icon: Code },
+    { number: '24/7', label: 'Platform Uptime', icon: Clock },
+    { number: 'Beta', label: 'Join Early Access', icon: Star }
+  ];
+
+  const gameFeatures = [
+    {
+      title: 'Multiple Game Modes',
+      items: ['Quick Match - Find opponents instantly', 'Private Rooms - Battle with friends', 'Public Lobbies - Join ongoing battles', 'Practice Mode - Solo skill building']
+    },
+    {
+      title: 'Competitive Features',
+      items: ['Real-time coding battles', 'Global leaderboards', 'Skill-based matchmaking', 'Achievement system']
+    },
+    {
+      title: 'Learning Platform',
+      items: ['Algorithm challenges', 'Data structure problems', 'Multiple programming languages', 'Detailed performance analytics']
+    }
   ];
 
   return (
@@ -62,7 +123,7 @@ const Landing: React.FC = () => {
               </Link>
               <Link to="/signup">
                 <Button variant="primary" size="sm">
-                  Get Started
+                  Join CodeBattle
                 </Button>
               </Link>
             </div>
@@ -77,7 +138,7 @@ const Landing: React.FC = () => {
           <div className="text-center">
             <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-full border border-cyan-500/30 mb-8">
               <Rocket className="w-4 h-4 text-cyan-400 mr-2" />
-              <span className="text-cyan-300 text-sm font-medium">Join the Ultimate Coding Arena</span>
+              <span className="text-cyan-300 text-sm font-medium">Beta Launch - Be Among the First!</span>
             </div>
             
             <h1 className="text-5xl md:text-7xl font-bold mb-6">
@@ -93,14 +154,14 @@ const Landing: React.FC = () => {
             </h1>
             
             <p className="text-xl text-slate-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Enter the ultimate arena where developers clash in real-time coding battles. 
-              Sharpen your skills, climb the ranks, and prove you're the coding champion.
+              The ultimate multiplayer coding arena where developers clash in real-time battles. 
+              Quick match globally, create private rooms, join public lobbies, and climb the leaderboards.
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
               <Link to="/signup">
                 <Button variant="primary" size="lg" icon={Play} className="text-lg px-8 py-4">
-                  Start Your Journey
+                  Join Beta Now
                 </Button>
               </Link>
               <Link to="/practice">
@@ -128,6 +189,10 @@ const Landing: React.FC = () => {
       {/* Stats Section */}
       <section className="py-20 bg-slate-800/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h3 className="text-2xl font-bold text-white mb-4">Platform Ready</h3>
+            <p className="text-slate-300">Built with cutting-edge technology for the ultimate coding experience</p>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
               <div key={index} className="text-center">
@@ -142,19 +207,49 @@ const Landing: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Game Features Section */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-white mb-4">
-              Why Choose <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">CodeBattle</span>?
+              How <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">CodeBattle</span> Works
             </h2>
             <p className="text-xl text-slate-300 max-w-2xl mx-auto">
-              Experience the most engaging way to improve your coding skills through competitive programming.
+              Multiple ways to challenge yourself and compete with developers worldwide
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+            {gameFeatures.map((section, index) => (
+              <Card key={index} className="text-center">
+                <h3 className="text-xl font-bold text-white mb-6">{section.title}</h3>
+                <ul className="space-y-3">
+                  {section.items.map((item, itemIndex) => (
+                    <li key={itemIndex} className="text-slate-300 flex items-start">
+                      <div className="w-2 h-2 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-slate-800/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">
+              Game Features
+            </h2>
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+              Everything you need for competitive programming and skill development
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <Card key={index} className="relative overflow-hidden group hover:scale-105 transition-transform duration-300">
                 <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-5 group-hover:opacity-10 transition-opacity`}></div>
@@ -175,16 +270,21 @@ const Landing: React.FC = () => {
       <section className="py-20 bg-gradient-to-r from-cyan-500/10 to-purple-500/10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold text-white mb-6">
-            Ready to Prove Your Skills?
+            Ready to Start Your Coding Journey?
           </h2>
           <p className="text-xl text-slate-300 mb-8">
-            Join thousands of developers who are already battling their way to the top.
+            Join our beta program and be among the first to experience the future of competitive programming.
           </p>
-          <Link to="/signup">
-            <Button variant="primary" size="lg" icon={ArrowRight} className="text-lg px-8 py-4">
-              Begin Your Coding Journey
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <Link to="/signup">
+              <Button variant="primary" size="lg" icon={ArrowRight} className="text-lg px-8 py-4">
+                Join Beta Access
+              </Button>
+            </Link>
+            <div className="text-slate-400 text-sm">
+              ⚡ Instant access • 🚀 No waiting list
+            </div>
+          </div>
         </div>
       </section>
 
@@ -200,8 +300,9 @@ const Landing: React.FC = () => {
                 CodeBattle
               </span>
             </div>
-            <div className="text-slate-400">
-              © 2024 CodeBattle. Elevating developers worldwide.
+            <div className="text-slate-400 text-center md:text-right">
+              <div>© 2024 CodeBattle. The future of competitive programming.</div>
+              <div className="text-sm text-slate-500 mt-1">Currently in Beta - Join the revolution!</div>
             </div>
           </div>
         </div>
