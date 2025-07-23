@@ -35,7 +35,7 @@ const Leaderboard: React.FC = () => {
   const fetchLeaderboard = async (): Promise<void> => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('https://codebattle-backend-1.onrender.com/api/match/leaderboard', {
+      const response = await fetch('http://localhost:5000/api/match/leaderboard', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -59,7 +59,7 @@ const Leaderboard: React.FC = () => {
   const getCurrentUser = async (): Promise<void> => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('https://codebattle-backend-1.onrender.com/api/match/profile', {
+      const response = await fetch('http://localhost:5000/api/match/profile', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = 'https://codebattle-backend-1.onrender.com/api';
+const API_BASE_URL = 'http://localhost:5000/api';
 
 interface RoomSettings {
   maxPlayers?: number;
